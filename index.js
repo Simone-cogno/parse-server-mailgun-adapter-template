@@ -9,18 +9,15 @@ var SimpleMailgunAdapter = mailgunOptions => {
 
   mailgunOptions.verificationSubject =
     mailgunOptions.verificationSubject ||
-    'Please verify your e-mail for %appname%';
+    {en: 'Please verify your e-mail for %appname%'};
   mailgunOptions.verificationBody =
-    mailgunOptions.verificationBody ||
-    'Hi,\n\nYou are being asked to confirm the e-mail address %email% ' +
-    'with %appname%\n\nClick here to confirm it:\n%link%';
+    mailgunOptions.verificationBody || {en: 'Hi,\n\nYou are being asked to confirm the e-mail address %email% ' +
+    'with %appname%\n\nClick here to confirm it:\n%link%'};
   mailgunOptions.passwordResetSubject =
-    mailgunOptions.passwordResetSubject ||
-    'Password Reset Request for %appname%';
+    mailgunOptions.passwordResetSubject || {en: 'Password Reset Request for %appname%'};
   mailgunOptions.passwordResetBody =
-    mailgunOptions.passwordResetBody ||
-    'Hi,\n\nYou requested a password reset for %appname%.\n\nClick here ' +
-    'to reset it:\n%link%';
+    mailgunOptions.passwordResetBody || {en: 'Hi,\n\nYou requested a password reset for %appname%.\n\nClick here ' +
+    'to reset it:\n%link%'};
 
   var mailgun = Mailgun(mailgunOptions);
 
@@ -47,6 +44,7 @@ var SimpleMailgunAdapter = mailgunOptions => {
   var sendVerificationEmail = options => {
     let user = options.user;
     let customerType = user.get('typeOfCustomer');
+    let userLanguage = user.get('language') || 'en';
 
     if(mailgunOptions.typeOfCustomersToVerify.indexOf(customerType) < 0 ){
       console.log(`Email not sent because customer type is ${customerType}`);
@@ -57,9 +55,9 @@ var SimpleMailgunAdapter = mailgunOptions => {
       var mail = mailcomposer({
         from: mailgunOptions.fromAddress,
         to: getRecipient(options.user),
-        subject: fillVariables(mailgunOptions.verificationSubject, options),
-        text: fillVariables(mailgunOptions.verificationBody, options),
-        html: fillVariables(mailgunOptions.verificationBodyHTML, options)
+        subject: fillVariables(mailgunOptions.verificationSubject[userLanguage], options),
+        text: fillVariables(mailgunOptions.verificationBody[userLanguage], options),
+        html: fillVariables(mailgunOptions.verificationBodyHTML[userLanguage], options)
       });
       return new Promise((resolve, reject) => {
       	mail.build((mailBuildError, message) => {
@@ -84,8 +82,8 @@ var SimpleMailgunAdapter = mailgunOptions => {
       var data = {
         from: mailgunOptions.fromAddress,
         to: getRecipient(options.user),
-        subject: fillVariables(mailgunOptions.verificationSubject, options),
-        text: fillVariables(mailgunOptions.verificationBody, options)
+        subject: fillVariables(mailgunOptions.verificationSubject[userLanguage], options),
+        text: fillVariables(mailgunOptions.verificationBody[userLanguage], options)
       }
       return new Promise((resolve, reject) => {
         mailgun.messages().send(data, (err, body) => {
@@ -99,13 +97,16 @@ var SimpleMailgunAdapter = mailgunOptions => {
   }
 
   var sendPasswordResetEmail = options => {
+    let user = options.user;
+    let userLanguage = user.get('language') || 'en';
+
     if(mailgunOptions.passwordResetBodyHTML){
       var mail = mailcomposer({
         from: mailgunOptions.fromAddress,
         to: getRecipient(options.user),
-        subject: fillVariables(mailgunOptions.passwordResetSubject, options),
-        text: fillVariables(mailgunOptions.passwordResetBody, options),
-        html: fillVariables(mailgunOptions.passwordResetBodyHTML, options)
+        subject: fillVariables(mailgunOptions.passwordResetSubject[userLanguage], options),
+        text: fillVariables(mailgunOptions.passwordResetBody[userLanguage], options),
+        html: fillVariables(mailgunOptions.passwordResetBodyHTML[userLanguage], options)
       });
       return new Promise((resolve, reject) => {
       	mail.build((mailBuildError, message) => {
@@ -130,8 +131,8 @@ var SimpleMailgunAdapter = mailgunOptions => {
       var data = {
         from: mailgunOptions.fromAddress,
         to: getRecipient(options.user),
-        subject: fillVariables(mailgunOptions.passwordResetSubject, options),
-        text: fillVariables(mailgunOptions.passwordResetBody, options)
+        subject: fillVariables(mailgunOptions.passwordResetSubject[userLanguage], options),
+        text: fillVariables(mailgunOptions.passwordResetBody[userLanguage], options)
       }
       return new Promise((resolve, reject) => {
         mailgun.messages().send(data, (err, body) => {
