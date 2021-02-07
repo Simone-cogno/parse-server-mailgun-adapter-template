@@ -48,12 +48,7 @@ var SimpleMailgunAdapter = mailgunOptions => {
   var sendVerificationEmail = options => {
     if(mailgunOptions.verificationBodyHTML){
       var mail = mailcomposer({
-        from: {
-          name: mailgunOptions.displayName ?
-            mailgunOptions.displayName :
-            options.appName,
-          address: mailgunOptions.fromAddress
-        },
+        from: mailgunOptions.fromAddress,
         to: getRecipient(options.user),
         subject: fillVariables(mailgunOptions.verificationSubject, options),
         text: fillVariables(mailgunOptions.verificationBody, options),
