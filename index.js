@@ -3,8 +3,8 @@ var Mailgun = require('mailgun-js');
 var mailcomposer = require('mailcomposer');
 
 var SimpleMailgunAdapter = mailgunOptions => {
-  if (!mailgunOptions || !mailgunOptions.apiKey || !mailgunOptions.domain || !mailgunOptions.fromAddress) {
-    throw 'SimpleMailgunAdapter requires an API Key, domain, and fromAddress.';
+  if (!mailgunOptions || !mailgunOptions.apiKey || !mailgunOptions.domain || !mailgunOptions.fromAddress || ! mailgunOptions.typeOfCustomersToVerify) {
+    throw 'SimpleMailgunAdapter requires an API Key, domain, fromAddress and typeOfCustomersToVerify.';
   }
 
   mailgunOptions.verificationSubject =
@@ -21,7 +21,6 @@ var SimpleMailgunAdapter = mailgunOptions => {
     mailgunOptions.passwordResetBody ||
     'Hi,\n\nYou requested a password reset for %appname%.\n\nClick here ' +
     'to reset it:\n%link%';
-
 
   var mailgun = Mailgun(mailgunOptions);
 
@@ -46,6 +45,14 @@ var SimpleMailgunAdapter = mailgunOptions => {
   }
 
   var sendVerificationEmail = options => {
+    let user = options.user;
+    let customerType = user.get('typeOfCustomer');
+
+    if(mailgunOptions.typeOfCustomersToVerify.indexOf(customerType) < 0 ){
+      console.log(`Email not sent because customer type is ${customerType}`);
+      return Promise.resolve();
+    }
+
     if(mailgunOptions.verificationBodyHTML){
       var mail = mailcomposer({
         from: mailgunOptions.fromAddress,
